@@ -44,6 +44,26 @@ def obtener_productos():
     response = requests.get(URL_SUPEBASE + 'PRODUCTO?select=*', headers=headers)
     return response.json(), response.status_code
 
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    headers = {'apikey': supebaseheads}
+    response = requests.get(URL_SUPEBASE + 'USUARIO?email=eq.' + email + '&password=eq.' + password, headers=headers)
+
+    if response.status_code == 200:
+        user_data = response.json()
+        if len(user_data) == 1:
+            # Usuario autenticado correctamente
+            return jsonify(user_data[0]), 200
+        else:
+            return jsonify({'error': 'Credenciales inválidas'}), 401
+    else:
+        return jsonify({'error': 'Error en el servidor'}), 500
+
 app.config['UPLOAD_FOLDER'] = 'upload'  # Carpeta donde se almacenan las imágenes subidas
 # Lista de extensiones permitidas
 extensiones_permitidas = {'jpg', 'jpeg', 'png', 'gif'}
