@@ -4,12 +4,15 @@ import os
 import uuid 
 import requests
 import json
+import supabase
 
 app = Flask(__name__)
 CORS(app)
 
 URL_SUPEBASE = 'https://gglsaoykhjniypthjgfc.supabase.co/rest/v1/'
 supebaseheads = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbHNhb3lraGpuaXlwdGhqZ2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1NTIwMTQsImV4cCI6MjAzMDEyODAxNH0.jmngoEfB87raLwTHDq1DI347a4owyHCqs75VSJUwMZo'
+os.environ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbHNhb3lraGpuaXlwdGhqZ2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1NTIwMTQsImV4cCI6MjAzMDEyODAxNH0.jmngoEfB87raLwTHDq1DI347a4owyHCqs75VSJUwMZo'] = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbHNhb3lraGpuaXlwdGhqZ2ZjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNDU1MjAxNCwiZXhwIjoyMDMwMTI4MDE0fQ.FTBFPMMnJOACE2iYWt47XaTF8_wjD0anXfyrVEPV74k'
+supabase_anon_key = os.getenv('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbHNhb3lraGpuaXlwdGhqZ2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1NTIwMTQsImV4cCI6MjAzMDEyODAxNH0.jmngoEfB87raLwTHDq1DI347a4owyHCqs75VSJUwMZo')
 
 @app.route('/agregar_producto', methods=['POST'])
 def agregar_producto():
@@ -180,4 +183,33 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
 
 
-#prueba2
+def enviar_correo_restablecimiento(email: str) -> dict:
+    try:
+        response = supabase_client.auth.api.reset_password_for_email(email)
+        if response.status_code == 200:
+            return {"message": "Correo de restablecimiento enviado exitosamente"}
+        else:
+            return {"error": "Error al enviar el correo de restablecimiento"}
+    except Exception as e:
+        return {"error": str(e)}
+
+def actualizar_contraseña(access_token: str, nueva_contraseña: str) -> dict:
+    try:
+        response = supabase_client.auth.api.update_user(access_token, {"password": nueva_contraseña})
+        if response.status_code == 200:
+            return {"message": "Contraseña actualizada exitosamente"}
+        else:
+            return {"error": "Error al actualizar la contraseña"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    token = data['token']
+    new_password = data['new_password']
+    result = actualizar_contraseña(token, new_password)
+    return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
