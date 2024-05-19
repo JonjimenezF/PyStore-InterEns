@@ -17,12 +17,12 @@ def agregar_producto():
     headers = {'apikey': supebaseheads}
     # Convertimos el objeto producto a JSON antes de pasarlo a requests.post
     response = requests.post(URL_SUPEBASE + 'PRODUCTO?', json=producto, headers=headers)
-    
      # Verificamos si la respuesta del servidor es válida
-    if response.status_code == 200:
+    print(response)
+    if response.status_code == 201:
         try:
             # Intentamos obtener el JSON de la respuesta
-            data = response.json()
+            data = producto_max_id()
         except json.decoder.JSONDecodeError:
             # Si hay un error al decodificar el JSON, devolvemos un mensaje de error genérico
             return jsonify({'error': 'Error al procesar la respuesta del servidor'}), 500
@@ -36,6 +36,49 @@ def agregar_producto():
     else:
         # Si la respuesta del servidor no es válida, devolvemos un mensaje de error
         return jsonify({'error': 'Error en la respuesta del servidor'}), response.status_code
+
+
+def producto_max_id():
+    query = {
+        "select": "*",
+        "order": "id_producto.desc",
+        "limit": 1
+    }
+    headers = {'apikey': supebaseheads}
+    
+    response = requests.get(f'{URL_SUPEBASE}PRODUCTO', headers=headers, params=query)
+    
+    if response.status_code == 200:
+        try:
+            data = response.json()
+        except json.decoder.JSONDecodeError:
+            return jsonify({'error': 'Error al procesar la respuesta del servidor'}), 500
+        
+        return data[0]
+    else:
+        return jsonify({'error': 'Error en la respuesta del servidor'}), response.status_code
+
+def subir_image_producto_max_id():
+    query = {
+        "select": "*",
+        "order": "id_producto.desc",
+        "limit": 1
+    }
+    headers = {'apikey': supebaseheads}
+    
+    response = requests.get(f'{URL_SUPEBASE}IMAGEN_PRODUCTO', headers=headers, params=query)
+    
+    if response.status_code == 200:
+        try:
+            data = response.json()
+        except json.decoder.JSONDecodeError:
+            return jsonify({'error': 'Error al procesar la respuesta del servidor'}), 500
+        
+        return data
+    else:
+        return jsonify({'error': 'Error en la respuesta del servidor'}), response.status_code
+
+
 
 # Obtener todos los productos de Supabase
 @app.route('/obtener_productos', methods=['GET'])
@@ -67,6 +110,31 @@ def login():
 app.config['UPLOAD_FOLDER'] = 'upload'  # Carpeta donde se almacenan las imágenes subidas
 # Lista de extensiones permitidas
 extensiones_permitidas = {'jpg', 'jpeg', 'png', 'gif'}
+
+@app.route('/subir_imagen_producto', methods=['POST'])
+def subir_imagen_producto():
+    producto = request.json
+    headers = {'apikey': supebaseheads}
+    producto = request.json   
+    response = requests.post(URL_SUPEBASE + 'IMAGEN_PRODUCTO', json=producto, headers=headers)
+        
+    if response.status_code == 201:
+        try:
+            # Intentamos obtener el JSON de la respuesta
+            data = subir_image_producto_max_id()
+        except json.decoder.JSONDecodeError:
+            # Si hay un error al decodificar el JSON, devolvemos un mensaje de error genérico
+            return jsonify({'error': 'Error al procesar la respuesta del servidor'}), 500
+
+        # Verificamos si la solicitud fue exitosa
+        if response.ok:
+            return jsonify(data), response.status_code
+        else:
+            # Si la solicitud no fue exitosa, devolvemos los detalles del error
+            return jsonify({'error': data}), response.status_code
+    else:
+        # Si la respuesta del servidor no es válida, devolvemos un mensaje de error
+        return jsonify({'error': 'Error en la respuesta del servidor'}), response.status_code
 
 # Subir foto
 @app.route('/upload', methods=['POST'])
@@ -106,6 +174,7 @@ def eliminar_foto(nombre_foto):
 
     os.remove(ruta_foto)  # Eliminar la foto del sistema de archivos
     return jsonify({'mensaje': 'Foto eliminada correctamente'}), 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
