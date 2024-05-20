@@ -87,6 +87,16 @@ def obtener_productos():
     response = requests.get(URL_SUPEBASE + 'PRODUCTO?select=*', headers=headers)
     return response.json(), response.status_code
 
+@app.route('/obtener_imagen', methods=['GET'])
+def obtener_imagen():
+    id_producto = request.args.get('id_producto')
+    headers = {'apikey': supebaseheads}
+    response = requests.get(URL_SUPEBASE + 'IMAGEN_PRODUCTO?id_producto=eq.' + id_producto + '&orden=eq.0', headers=headers)
+    if response.status_code == 200:
+        return response.json(), response.status_code
+    else:
+        return jsonify({'error': 'Error en el servidor'}), 500
+
 
 @app.route('/login', methods=['POST'])
 def login():
