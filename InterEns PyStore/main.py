@@ -160,6 +160,7 @@ def agregar_carrito():
         # Si la respuesta es un error, devuelve un mensaje de error con el código de estado
         return jsonify({'error': 'Error al agregar el producto al carrito'}), response.status_code
 
+
 @app.route('/eliminar_producto_carrito/<int:id_carrito>', methods=['DELETE'])
 def eliminar_producto_carrito(id_carrito):
     headers = {'apikey': supebaseheads}
@@ -171,6 +172,7 @@ def eliminar_producto_carrito(id_carrito):
         return jsonify({'message': 'Producto eliminado del carrito correctamente'}), 200
     else:
         return jsonify({'error': 'Error al eliminar el producto del carrito'}), response.status_code
+
 
 # Obtener todos los productos de Supabase
 @app.route('/obtener_carrito', methods=['GET'])
