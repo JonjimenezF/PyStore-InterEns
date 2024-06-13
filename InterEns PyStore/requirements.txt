@@ -7,3 +7,4 @@ MarkupSafe==2.1.5
 uuid==1.30
 Werkzeug==3.0.2
 requests==2.31.0
+flask-cors==3.0.10
