@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from flask_mail import Mail, Message
 import os
 import uuid 
 import requests
@@ -7,7 +8,10 @@ import json
 # import supabase
 
 app = Flask(__name__)
+from flask_cors import CORS
+
 CORS(app)
+
 
 URL_SUPEBASE = 'https://gglsaoykhjniypthjgfc.supabase.co/rest/v1/'
 supebaseheads = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbHNhb3lraGpuaXlwdGhqZ2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1NTIwMTQsImV4cCI6MjAzMDEyODAxNH0.jmngoEfB87raLwTHDq1DI347a4owyHCqs75VSJUwMZo'
@@ -332,7 +336,36 @@ def eliminar_foto(nombre_foto):
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'interens.contacto@gmail.com'  # Cambiar a tu dirección de correo electrónico de Gmail
+app.config['MAIL_PASSWORD'] = 'Interens123'  # Cambiar a tu contraseña de Gmail
+app.config['MAIL_DEFAULT_SENDER'] = 'interens.contacto@gmail.com'
 
+mail = Mail(app)
+
+@app.route('/enviar-correo', methods=['POST'])
+def enviar_correo():
+    data = request.json
+    nombre = data.get('nombre')
+    destinatario = data.get('destinatario')
+
+    mensaje = Message(subject='Prueba de Correo',
+                      recipients=[destinatario],
+                      body=f'Hola {nombre}, este es un ejemplo de correo enviado desde Flask.')
+
+    try:
+        mail.send(mensaje)
+        return jsonify({'mensaje': 'Correo enviado correctamente'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Otros endpoints y configuración del servidor...
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
 # def enviar_correo_restablecimiento(email: str) -> dict:
 #     try:
 #         response = supabase_client.auth.api.reset_password_for_email(email)
