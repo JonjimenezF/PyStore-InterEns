@@ -5,6 +5,7 @@ import os
 import uuid 
 import requests
 import json
+import traceback
 # import supabase
 
 app = Flask(__name__)
@@ -332,16 +333,11 @@ def eliminar_foto(nombre_foto):
     os.remove(ruta_foto)  # Eliminar la foto del sistema de archivos
     return jsonify({'mensaje': 'Foto eliminada correctamente'}), 200
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
-
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'interens.contacto@gmail.com'  # Cambiar a tu dirección de correo electrónico de Gmail
-app.config['MAIL_PASSWORD'] = 'Interens123'  # Cambiar a tu contraseña de Gmail
-app.config['MAIL_DEFAULT_SENDER'] = 'interens.contacto@gmail.com'
+app.config['MAIL_USERNAME'] = 'interens.contacto@gmail.com'
+app.config['MAIL_PASSWORD'] = 'spln pztp ajsr ztqk'  # Contraseña de aplicación de Google
 
 mail = Mail(app)
 
@@ -349,18 +345,25 @@ mail = Mail(app)
 def enviar_correo():
     data = request.json
     nombre = data.get('nombre')
-    destinatario = data.get('destinatario')
+    email_usuario = data.get('destinatario')
+    mensaje_usuario = data.get('mensaje')
 
-    mensaje = Message(subject='Prueba de Correo',
-                      recipients=[destinatario],
-                      body=f'Hola {nombre}, este es un ejemplo de correo enviado desde Flask.')
+    mensaje = Message(
+        sender=f'{email_usuario}',  # Utilizar el correo del usuario como remitente
+        subject='Nuevo mensaje de contacto',
+        recipients=['interens.contacto@gmail.com'],  # Para (To)
+        body=f'Nombre: {nombre}\nCorreo: {email_usuario}\nMensaje: {mensaje_usuario}',
+        
+    )
 
     try:
+        print(mensaje)
         mail.send(mensaje)
         return jsonify({'mensaje': 'Correo enviado correctamente'}), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+        error_message = traceback.format_exc()
+        print(error_message)
+        return jsonify({'error': str(e), 'trace': error_message}), 500
 # Otros endpoints y configuración del servidor...
 
 
