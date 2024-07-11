@@ -35,7 +35,7 @@ def obtener_productos_id():
     response = requests.get(URL_SUPEBASE + f"PRODUCTO?select=*&id_usuario=eq.{id_usuario}", headers=headers)
     return response.json(), response.status_code
 
-
+#Eliminar
 @app.route('/Eliminarproducto/<int:id>', methods=['DELETE'])
 def eliminar_producto(id):
     headers = {'apikey': supebaseheads}
