@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: flask-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn -w 4 main:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+    disk:
+      sizeGB: 1
+      mountPath: /var/lib/data
